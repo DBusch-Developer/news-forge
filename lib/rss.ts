@@ -66,3 +66,38 @@ export function extractImage(item: unknown): string | null {
 
   return null;
 }
+
+export async function fetchOgImage(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; NewsForge/1.0)',
+      },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!response.ok) return null;
+    const html = await response.text();
+
+    const patterns = [
+      /<meta\s+property=["']og:image(?::secure_url)?["']\s+content=["']([^"']+)["']/i,
+      /<meta\s+content=["']([^"']+)["']\s+property=["']og:image(?::secure_url)?["']/i,
+      /<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i,
+      /<meta\s+content=["']([^"']+)["']\s+name=["']twitter:image["']/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match?.[1]) {
+        try {
+          return new URL(match[1], url).href; // resolve relative URLs
+        } catch {
+          return null;
+        }
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}

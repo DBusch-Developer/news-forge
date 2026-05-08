@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Parser from "rss-parser";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { FEEDS, extractImage } from "@/lib/rss";
+import { FEEDS, extractImage, fetchOgImage } from "@/lib/rss";
 
 const parser = new Parser({
   headers: {
@@ -38,17 +38,25 @@ export async function POST() {
       try {
         const parsed = await parser.parseURL(feed.url);
 
-        const articles = parsed.items
-          .filter((item) => item.link && item.title)
-          .map((item) => ({
-            source: feed.id,
-            source_url: item.link!.trim(),
-            title: item.title!.trim(),
-            excerpt: truncate(item.contentSnippet || "", 500),
-            image_url: extractImage(item),
-            published_at:
-              item.isoDate || item.pubDate || new Date().toISOString(),
-          }));
+        const articles = await Promise.all(
+          parsed.items
+            .filter((item) => item.link && item.title)
+            .map(async (item) => {
+              const rssImage = extractImage(item);
+              const imageUrl =
+                rssImage || (await fetchOgImage(item.link!.trim()));
+
+              return {
+                source: feed.id,
+                source_url: item.link!.trim(),
+                title: item.title!.trim(),
+                excerpt: truncate(item.contentSnippet || "", 500),
+                image_url: imageUrl,
+                published_at:
+                  item.isoDate || item.pubDate || new Date().toISOString(),
+              };
+            }),
+        );
 
         const { data, error } = await admin
           .from("articles")
