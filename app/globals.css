@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0A0118;
+  --bg-card: #14062B;
+  --bg-elev: #1F0A3D;
+  --border: #2D1857;
+
+  --pink: #FF1493;
+  --cyan: #22D3EE;
+  --green: #39FF14;
+  --orange: #FF6B35;
+
+  --text: #F5F0FF;
+  --text-muted: #9A8FB8;
+  --text-faint: #6B5F8C;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(255, 20, 147, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: fixed;
+}
+
+/* Glow utilities */
+.glow-pink { text-shadow: 0 0 12px rgba(255, 20, 147, 0.6), 0 0 24px rgba(255, 20, 147, 0.3); }
+.glow-cyan { text-shadow: 0 0 12px rgba(34, 211, 238, 0.6), 0 0 24px rgba(34, 211, 238, 0.3); }
+.glow-green { text-shadow: 0 0 10px rgba(57, 255, 20, 0.4); }
+.glow-orange { text-shadow: 0 0 10px rgba(255, 107, 53, 0.4); }
+
+/* Font helpers (vars come from next/font in layout.tsx) */
+.font-display { font-family: var(--font-display), system-ui, sans-serif; }
+.font-retro { font-family: var(--font-mono), monospace; }
+
+/* Component classes */
+.nav-link {
+  font-family: var(--font-mono), monospace;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--cyan);
+  transition: text-shadow 0.2s;
+  text-decoration: none;
+}
+.nav-link:hover { text-shadow: 0 0 10px var(--cyan); }
+
+.btn-pink-outline {
+  font-family: var(--font-display), sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--pink);
+  background: transparent;
+  border: 1px solid var(--pink);
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.btn-pink-outline:hover { box-shadow: 0 0 14px rgba(255, 20, 147, 0.5); }
+
+.pill {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+.pill:hover { border-color: var(--cyan); color: var(--cyan); }
+.pill.active {
+  background: rgba(255, 20, 147, 0.1);
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+::selection { background: rgba(255, 20, 147, 0.3); color: var(--text); }
