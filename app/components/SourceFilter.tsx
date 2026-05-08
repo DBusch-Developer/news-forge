@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { FEEDS } from "@/lib/rss";
+import { SortDropdown } from "./SortDropdown";
 
 function buildUrl(source?: string, sort?: string): string {
   const params = new URLSearchParams();
   if (source) params.set("source", source);
-  if (sort && sort !== "newest") params.set("sort", sort); // "newest" is default — keep URL clean
+  if (sort && sort !== "newest") params.set("sort", sort);
   const qs = params.toString();
   return qs ? `/?${qs}` : "/";
 }
@@ -21,12 +22,19 @@ export function SourceFilter({
       <div className="max-w-[1200px] mx-auto px-8 py-7 flex items-center gap-4 flex-wrap">
         <span
           className="font-retro uppercase glow-green"
-          style={{ fontSize: "18px", letterSpacing: "2px", color: "var(--green)" }}
+          style={{
+            fontSize: "18px",
+            letterSpacing: "2px",
+            color: "var(--green)",
+          }}
         >
           // Filter:
         </span>
         <div className="flex gap-2.5 flex-wrap">
-          <Link href={buildUrl(undefined, sort)} className={`pill ${!active ? "active" : ""}`}>
+          <Link
+            href={buildUrl(undefined, sort)}
+            className={`pill ${!active ? "active" : ""}`}
+          >
             All Sources
           </Link>
           {FEEDS.map((feed) => (
@@ -40,25 +48,18 @@ export function SourceFilter({
           ))}
         </div>
 
-        <div className="ml-auto flex gap-2.5 items-center">
+        <div className="ml-auto flex gap-3 items-center">
           <span
-            className="font-retro uppercase"
-            style={{ fontSize: "18px", letterSpacing: "1px", color: "var(--cyan)" }}
+            className="font-retro uppercase glow-yellow"
+            style={{
+              fontSize: "18px",
+              letterSpacing: "1px",
+              color: "var(--yellow)",
+            }}
           >
             // Sort:
           </span>
-          <Link
-            href={buildUrl(active, "newest")}
-            className={`pill ${(!sort || sort === "newest") ? "active" : ""}`}
-          >
-            Newest
-          </Link>
-          <Link
-            href={buildUrl(active, "oldest")}
-            className={`pill ${sort === "oldest" ? "active" : ""}`}
-          >
-            Oldest
-          </Link>
+          <SortDropdown />
         </div>
       </div>
     </div>
