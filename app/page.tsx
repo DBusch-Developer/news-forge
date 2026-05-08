@@ -7,15 +7,16 @@ export const dynamic = "force-dynamic";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string }>;
+  searchParams: Promise<{ source?: string; sort?: string }>;
 }) {
   const params = await searchParams;
+  const ascending = params.sort === "oldest";
   const supabase = await createClient();
 
   let query = supabase
     .from("articles")
     .select("*")
-    .order("published_at", { ascending: false })
+    .order("published_at", { ascending })
     .limit(60);
 
   if (params.source) {
@@ -41,7 +42,11 @@ export default async function Home({
         <div className="max-w-[1200px] mx-auto px-8 relative">
           <div
             className="font-retro uppercase mb-5 glow-green"
-            style={{ fontSize: "22px", letterSpacing: "4px", color: "var(--green)" }}
+            style={{
+              fontSize: "22px",
+              letterSpacing: "4px",
+              color: "var(--green)",
+            }}
           >
             // Broadcasting from the future
           </div>
@@ -49,22 +54,28 @@ export default async function Home({
             className="font-display uppercase mb-6"
             style={{ fontSize: "68px", lineHeight: 1.05, letterSpacing: "2px" }}
           >
-            AI news,<br />
-            <span className="glow-pink" style={{ color: "var(--pink)" }}>forged</span>{" "}
+            AI news,
+            <br />
+            <span className="glow-pink" style={{ color: "var(--pink)" }}>
+              forged
+            </span>{" "}
             for{" "}
-            <span className="glow-cyan" style={{ color: "var(--cyan)" }}>builders</span>
+            <span className="glow-cyan" style={{ color: "var(--cyan)" }}>
+              builders
+            </span>
           </h1>
           <p
             className="max-w-[580px] mx-auto"
             style={{ fontSize: "17px", color: "var(--text-muted)" }}
           >
-            Browse the latest AI news from trusted sources. Generate cohort-ready presentation briefs in seconds.
+            Browse the latest AI news from trusted sources. Generate
+            cohort-ready presentation briefs in seconds.
           </p>
         </div>
       </section>
 
       {/* FILTER */}
-      <SourceFilter active={params.source} />
+      <SourceFilter active={params.source} sort={params.sort} />
 
       {/* FEED */}
       <section className="py-9 pb-16">
@@ -73,13 +84,18 @@ export default async function Home({
             className="font-display uppercase mb-6"
             style={{ fontSize: "22px", letterSpacing: "2px" }}
           >
-            Latest <span style={{ color: "var(--cyan)" }}>// transmissions</span>
+            Latest{" "}
+            <span style={{ color: "var(--cyan)" }}>// transmissions</span>
           </h2>
 
           {!articles || articles.length === 0 ? (
             <div
               className="text-center py-16 font-retro"
-              style={{ fontSize: "20px", color: "var(--text-muted)", letterSpacing: "1px" }}
+              style={{
+                fontSize: "20px",
+                color: "var(--text-muted)",
+                letterSpacing: "1px",
+              }}
             >
               {params.source
                 ? `// No articles from this source yet`

@@ -63,3 +63,63 @@ Generate the brief now.`;
 
   return JSON.parse(content) as Brief;
 }
+
+const CURATION_SYSTEM_PROMPT = `You are curating the top 5 most important AI news stories of the past week for a cohort of new developers learning to build with AI.
+
+Given a list of articles with titles, sources, and excerpts, pick the 5 most worth their attention.
+
+Prioritize:
+- Capability advances (new models, benchmarks, breakthroughs)
+- Builder-relevant news (APIs, tools, platforms, pricing)
+- Policy or regulation that affects what they can build
+- Stories with broad implications, not narrow product updates
+
+Avoid:
+- Hype with no substance
+- Multiple stories on the same angle (pick the strongest one)
+
+Return JSON in this exact shape:
+
+{
+  "picks": [
+    { "article_index": 0, "reasoning": "One short editorial sentence on why this matters this week." }
+  ]
+}
+
+Include exactly 5 picks, ranked from most to least important. article_index is the 0-indexed position of the article in the input list. Return ONLY the JSON object. No preamble, no markdown.`;
+
+export type WeeklyPick = {
+  article_index: number;
+  reasoning: string;
+};
+
+export async function generateWeeklyPicks(
+  articles: Array<{ title: string; source: string; excerpt: string | null }>
+): Promise<WeeklyPick[]> {
+  const articleList = articles
+    .map(
+      (a, i) =>
+        `${i}. [${a.source}] ${a.title}\n   ${(a.excerpt ?? '').slice(0, 200)}`
+    )
+    .join('\n\n');
+
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [
+      { role: 'system', content: CURATION_SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: `Articles from the past week:\n\n${articleList}\n\nPick the top 5.`,
+      },
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.3,
+    max_tokens: 1500,
+  });
+
+  const content = completion.choices[0]?.message?.content;
+  if (!content) throw new Error('Empty response from Groq');
+
+  const data = JSON.parse(content) as { picks: WeeklyPick[] };
+  return data.picks;
+}

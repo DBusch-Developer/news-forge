@@ -6,6 +6,7 @@ import { BriefBuilder } from '../../components/BriefBuilder';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { SaveButton } from "../../components/SaveButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -108,6 +109,7 @@ export default async function ArticlePage({
         >
           Read original →
         </a>
+        <SaveButton articleId={article.id} />
       </div>
 
       {scrapeFailed ? (
