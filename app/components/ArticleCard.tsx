@@ -12,19 +12,27 @@ type Article = {
   published_at: string | null;
 };
 
-const GRADIENTS: Record<string, string> = {
-  verge: "linear-gradient(135deg, #2D0824 0%, #4A1140 100%)",
-  techcrunch: "linear-gradient(135deg, #062932 0%, #0E5363 100%)",
-  "mit-tech-review": "linear-gradient(135deg, #0A2406 0%, #1A4710 100%)",
-  "ars-technica": "linear-gradient(135deg, #2A1408 0%, #4F2916 100%)",
+const SOURCE_PALETTES: Record<string, [string, string, string]> = {
+  verge:             ['#2D0824', '#4A1140', '#7A1F5E'],
+  techcrunch:        ['#062932', '#0E5363', '#137A89'],
+  'mit-tech-review': ['#0A2406', '#1A4710', '#2B6F1A'],
+  'ars-technica':    ['#2A1408', '#4F2916', '#7C3F1F'],
 };
+
+function uniqueGradient(article: { id: string; source: string }): string {
+  const hash = Math.abs(
+    article.id.split('').reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) | 0, 0)
+  );
+  const angle = (hash % 18) * 20;       // 0, 20, …, 340
+  const offset = 30 + (hash % 40);      // 30 – 69
+  const palette = SOURCE_PALETTES[article.source] ?? ['#1F0A3D', '#2D1857', '#4A2880'];
+  return `linear-gradient(${angle}deg, ${palette[0]} 0%, ${palette[1]} ${offset}%, ${palette[2]} 100%)`;
+}
 
 export function ArticleCard({ article }: { article: Article }) {
   const feed = getFeedById(article.source);
   const sourceName = feed?.name ?? article.source;
-  const gradient =
-    GRADIENTS[article.source] ??
-    "linear-gradient(135deg, #1F0A3D 0%, #2D1857 100%)";
+const gradient = uniqueGradient(article);
 
   const hoursOld = article.published_at
     ? (Date.now() - new Date(article.published_at).getTime()) / 3_600_000
