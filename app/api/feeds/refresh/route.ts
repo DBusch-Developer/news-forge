@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Parser from "rss-parser";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { FEEDS, extractImage, fetchOgImage } from "@/lib/rss";
+
+export const maxDuration = 60;
 
 const parser = new Parser({
   headers: {
@@ -92,4 +94,15 @@ export async function POST() {
     results,
     new_total: results.reduce((sum, r) => sum + r.new, 0),
   });
+}
+
+export async function GET(req: NextRequest) {
+  // In production, only let Vercel Cron call this
+  if (process.env.NODE_ENV === 'production') {
+    const auth = req.headers.get('authorization');
+    if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+  return POST();
 }
