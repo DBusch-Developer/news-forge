@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { generateWeeklyPicks } from '@/lib/groq';
 
+export const maxDuration = 60;
+
 function getWeekStart(): string {
   const now = new Date();
   const day = now.getDay();

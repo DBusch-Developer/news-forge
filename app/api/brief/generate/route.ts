@@ -4,6 +4,8 @@ import { scrapeArticle } from '@/lib/scraper';
 import { generateBrief } from '@/lib/groq';
 import { getFeedById } from '@/lib/rss';
 
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const { articleId } = await req.json();

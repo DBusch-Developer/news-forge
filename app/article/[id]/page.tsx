@@ -1,12 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { scrapeArticle } from '@/lib/scraper';
 import { getFeedById } from '@/lib/rss';
 import { BriefBuilder } from '../../components/BriefBuilder';
+import { SaveButton } from '../../components/SaveButton';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { SaveButton } from "../../components/SaveButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,33 +24,14 @@ export default async function ArticlePage({
 
   if (!article) notFound();
 
-  // Scrape full text on first view, cache to DB
-  let fullText: string | null = article.full_text;
-  let scrapeFailed = false;
-
-  if (!fullText) {
-    const scrape = await scrapeArticle(article.source_url);
-    if (scrape.success) {
-      fullText = scrape.text;
-      const admin = createAdminClient();
-      await admin.from('articles').update({ full_text: scrape.text }).eq('id', id);
-    } else {
-      scrapeFailed = true;
-    }
-  }
-
   const feed = getFeedById(article.source);
   const sourceName = feed?.name ?? article.source;
   const timeAgo = article.published_at
     ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
     : 'recently';
 
-  const paragraphs = fullText
-    ? fullText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
-    : [];
-
   return (
-    <main className="max-w-[860px] mx-auto px-8 py-12">
+    <main className="max-w-[860px] mx-auto px-6 md:px-8 py-12">
       <Link
         href="/"
         className="font-retro uppercase mb-8 inline-block transition-opacity hover:opacity-70"
@@ -90,7 +69,7 @@ export default async function ArticlePage({
       </h1>
 
       <div
-        className="flex gap-3 pb-8 mb-8"
+        className="flex gap-3 pb-8 mb-8 flex-wrap"
         style={{ borderBottom: '1px solid var(--border)' }}
       >
         <a
@@ -112,36 +91,25 @@ export default async function ArticlePage({
         <SaveButton articleId={article.id} />
       </div>
 
-      {scrapeFailed ? (
-        <div
-          className="p-5 rounded mb-8"
-          style={{
-            background: 'rgba(255, 107, 53, 0.08)',
-            border: '1px solid var(--orange)',
-          }}
-        >
+      {/* Excerpt block */}
+      {article.excerpt && (
+        <div className="mb-12">
           <div
-            className="font-retro uppercase mb-2 glow-orange"
-            style={{ fontSize: '14px', letterSpacing: '2px', color: 'var(--orange)' }}
+            className="font-retro uppercase mb-3"
+            style={{ fontSize: '14px', letterSpacing: '2px', color: 'var(--cyan)' }}
           >
-            // Signal lost — using excerpt
+            // Excerpt
           </div>
-          <p style={{ fontSize: '16px', lineHeight: 1.7, color: 'var(--text)' }}>
+          <p style={{ fontSize: '17px', lineHeight: 1.75, color: 'var(--text)' }}>
             {article.excerpt}
           </p>
+          <div
+            className="font-retro mt-4"
+            style={{ fontSize: '13px', color: 'var(--text-faint)', letterSpacing: '1px' }}
+          >
+            // Tap Build Brief for an AI summary of the full article
+          </div>
         </div>
-      ) : (
-        <article className="mb-12">
-          {paragraphs.map((para, i) => (
-            <p
-              key={i}
-              className="mb-5"
-              style={{ fontSize: '16px', lineHeight: 1.75, color: 'var(--text)' }}
-            >
-              {para}
-            </p>
-          ))}
-        </article>
       )}
 
       <BriefBuilder articleId={article.id} />
