@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
 import Parser from "rss-parser";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { FEEDS } from "@/lib/rss";
+import { FEEDS, extractImage } from "@/lib/rss";
 
 const parser = new Parser({
   headers: {
     "User-Agent": "Mozilla/5.0 (compatible; NewsForge/1.0)",
   },
   timeout: 15000,
+  customFields: {
+    item: [
+      ["media:content", "mediaContent", { keepArray: true }],
+      ["media:thumbnail", "mediaThumbnail", { keepArray: true }],
+      ["content:encoded", "contentEncoded"],
+    ],
+  },
 });
 
 function truncate(text: string, max: number): string {
@@ -38,6 +45,7 @@ export async function POST() {
             source_url: item.link!.trim(),
             title: item.title!.trim(),
             excerpt: truncate(item.contentSnippet || "", 500),
+            image_url: extractImage(item),
             published_at:
               item.isoDate || item.pubDate || new Date().toISOString(),
           }));
@@ -46,7 +54,7 @@ export async function POST() {
           .from("articles")
           .upsert(articles, {
             onConflict: "source_url",
-            ignoreDuplicates: true,
+            ignoreDuplicates: false,
           })
           .select("id");
 

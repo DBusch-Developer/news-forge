@@ -8,6 +8,7 @@ type Article = {
   source_url: string;
   title: string;
   excerpt: string | null;
+  image_url: string | null;
   published_at: string | null;
 };
 
@@ -48,9 +49,14 @@ export function ArticleCard({ article }: { article: Article }) {
       }}
     >
       <div
-        className="h-[140px] flex items-end p-3"
+        className="h-[140px] flex items-end p-3 relative"
         style={{
-          background: gradient,
+          background: article.image_url
+            ? `linear-gradient(to top, rgba(10, 1, 24, 0.85) 0%, rgba(10, 1, 24, 0.2) 50%, transparent 100%), url(${article.image_url})`
+            : gradient,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundColor: "var(--bg-elev)",
           borderBottom: "1px solid var(--border)",
         }}
       >
